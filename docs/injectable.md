@@ -3,19 +3,6 @@
 Modern Dependency Injection library for TypeScript using the new
 [TC39 Decorators](https://github.com/tc39/proposal-decorators).
 
-## Usage
-
-```typescript
-import { injectable, resolve } from "@sentium/injectable";
-
-@injectable()
-class MyClass {
-  ...
-}
-
-const myInstance = resolve(MyClass);
-```
-
 ## Features
 
 - Ultrafast & **Lightweight**
@@ -48,6 +35,19 @@ const myInstance = resolve(MyClass);
 
 ```typescript
 import { ... } from "https://deno.land/x/sentium/injectable/mod.ts";
+```
+
+## Usage
+
+```typescript
+import { injectable, resolve } from "@sentium/injectable";
+
+@injectable()
+class MyClass {
+  ...
+}
+
+const myInstance = resolve(MyClass);
 ```
 
 ## Documentation
