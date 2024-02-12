@@ -1,5 +1,5 @@
-import { injectable } from './injectable.ts';
-import { resolve } from './resolver.ts';
+import { InjectableManager } from "./manager.ts";
+import { resolve } from "./resolver.ts";
 
 /**
  * A class that wraps a value.
@@ -9,7 +9,7 @@ export abstract class Wrapped<T> {
     /**
      * The wrapped value.
      */
-    public readonly value: T
+    public readonly value: T,
   ) {}
 }
 
@@ -26,26 +26,30 @@ export type WrapperClass<T = unknown> = new () => Wrapped<T>;
  * @param value The value to wrap.
  * @returns A class that wraps the value and is injectable.
  */
-export const wrap = <const T = unknown>(value: T): WrapperClass<T> =>
-  (
-    @injectable()
-    class extends Wrapped<T> {
-      constructor() {
-        super(value);
-      }
+export const wrap = <const T = unknown>(value: T): WrapperClass<T> => {
+  // create a wrapper class with the value that extends the Wrapped class
+  const wrapperClass = class extends Wrapped<T> {
+    constructor() {
+      super(value);
     }
-  );
+  };
+
+  // declare the wrapper class as injectable
+  new InjectableManager(wrapperClass).declare([]);
+
+  // return the wrapper class
+  return wrapperClass;
+};
 
 /**
  * Unwrapped value of a wrapped instance or a wrapper class.
  */
-export type Unwrapped<T extends Wrapped<unknown> | WrapperClass<unknown>> = T extends Wrapped<
-  infer U
->
-  ? U
-  : T extends WrapperClass<infer U>
-  ? U
-  : never;
+export type Unwrapped<T extends Wrapped<unknown> | WrapperClass<unknown>> =
+  T extends Wrapped<
+    infer U
+  > ? U
+    : T extends WrapperClass<infer U> ? U
+    : never;
 
 /**
  * Unwrap a value from a wrapped instance or a wrapper class.

@@ -10,5 +10,11 @@
   },
   "test": {
     "include": ["./test/**/*.ts"]
+  },
+  "tasks": {
+    "publish:common": "deno run -A build.ts common && npm publish --access public ./npm/common",
+    "publish:metadata": "deno run -A build.ts metadata && npm publish --access public ./npm/metadata",
+    "publish:injectable": "deno run -A build.ts injectable && npm publish --access public ./npm/injectable",
+    "publish": "deno task publish:common && deno task publish:metadata && deno task publish:injectable"
   }
 }
