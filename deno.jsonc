@@ -1,0 +1,19 @@
+{
+  "imports": {
+    "@sentium/common": "./modules/common/mod.ts",
+    "@sentium/controller": "./modules/controller/mod.ts",
+    "@sentium/injectable": "./modules/injectable/mod.ts",
+    "@sentium/metadata": "./modules/metadata/mod.ts",
+    // external
+    "std/": "https://deno.land/std@0.215.0/",
+    "dnt": "https://deno.land/x/dnt@0.25.2/mod.ts"
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-explicit-any"]
+    }
+  },
+  "test": {
+    "include": ["./test/**/*.ts"]
+  }
+}
