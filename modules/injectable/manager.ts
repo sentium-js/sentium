@@ -1,6 +1,6 @@
-import { Class, InstanceTypes } from '@sentium/common';
+import { Class, InstanceTypes } from '../common/mod.ts';
+import { Metadata } from '../metadata/mod.ts';
 import { InjectableInitializer } from './types.ts';
-import { Metadata } from '@sentium/metadata';
 import { InjectableMetadata } from './types.ts';
 import { InjectableScope } from './types.ts';
 

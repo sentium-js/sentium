@@ -1,2 +1,3 @@
-# sentium
-Decorator-based Backend Framework
+# Sentium
+
+Modern TypeScript Backend Framework

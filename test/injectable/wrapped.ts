@@ -1,4 +1,4 @@
-import { wrap, unwrap, resolve, injectable, Wrapped } from '@sentium/injectable';
+import { wrap, unwrap, resolve, injectable, Wrapped } from '../../modules/injectable/mod.ts';
 import { assertStrictEquals } from 'std/assert/assert_strict_equals.ts';
 
 Deno.test('wrapped value', () => {

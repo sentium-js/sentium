@@ -1,4 +1,4 @@
-import { injectable } from '@sentium/injectable';
+import { injectable } from './injectable.ts';
 import { resolve } from './resolver.ts';
 
 /**

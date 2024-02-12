@@ -1,4 +1,4 @@
-import { Class, MaybePromise, InstanceTypes } from '@sentium/common';
+import { Class, MaybePromise, InstanceTypes } from '../common/mod.ts';
 
 /**
  * Type of the scope for the injectable class.

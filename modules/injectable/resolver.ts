@@ -1,4 +1,4 @@
-import { Class } from '@sentium/common';
+import { Class } from '../common/mod.ts';
 import { InjectableManager } from './manager.ts';
 import { InjectableScope } from './types.ts';
 

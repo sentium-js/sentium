@@ -4,7 +4,7 @@ import {
   assertThrows,
   assertStrictEquals,
 } from 'std/assert/mod.ts';
-import { injectable, resolveAsync, resolve, preload } from '@sentium/injectable';
+import { injectable, resolveAsync, resolve, preload } from '../../modules/injectable/mod.ts';
 
 Deno.test('class with async initializer', async () => {
   @injectable([], async () => {

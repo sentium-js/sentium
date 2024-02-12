@@ -1,5 +1,5 @@
 import { assertInstanceOf, assertEquals } from 'std/assert/mod.ts';
-import { injectable, resolve } from '@sentium/injectable';
+import { injectable, resolve } from '../../modules/injectable/mod.ts';
 
 Deno.test('basic class', () => {
   @injectable()

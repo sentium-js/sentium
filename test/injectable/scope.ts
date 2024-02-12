@@ -1,4 +1,4 @@
-import { injectable, resolve } from '@sentium/injectable';
+import { injectable, resolve } from '../../modules/injectable/mod.ts';
 import { assertInstanceOf, assertNotStrictEquals, assertStrictEquals } from 'std/assert/mod.ts';
 
 Deno.test('class instance with different scopes', () => {
