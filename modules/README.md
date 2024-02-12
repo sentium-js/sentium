@@ -1,1 +1,3 @@
-../README.md
+# Sentium
+
+Modern TypeScript Backend Framework
