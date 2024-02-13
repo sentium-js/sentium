@@ -1,5 +1,8 @@
 import { MaybePromise } from "../../common/mod.ts";
-import { Handler as HonoHandler } from "../../dep/hono.ts";
+
+export type Body = BodyInit | null | undefined;
+
+type HonoHandler = any;
 
 export type Handler = MethodHandler | MiddlewareHandler;
 

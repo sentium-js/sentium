@@ -24,6 +24,12 @@ export class Meta<
     return this.target.prototype === undefined ? "method" : "class";
   }
 
+  default<Key extends keyof M>(key: Key, value: MetaValue<M, Key>): void {
+    if (!this.metadata.value.map.has(key)) {
+      this.metadata.value.map.set(key, value);
+    }
+  }
+
   set<Key extends keyof M>(key: Key, value: MetaValue<M, Key>): void {
     this.metadata.value.map.set(key, value);
   }

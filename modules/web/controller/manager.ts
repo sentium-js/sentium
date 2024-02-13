@@ -1,9 +1,8 @@
 import { Class } from "../../common/mod.ts";
 import { InjectableManager } from "../../injectable/mod.ts";
 import { Metadata } from "../../metadata/mod.ts";
-import { Router } from "../mod.ts";
-import { ControllerOptions } from "./types.ts";
-import { ControllerMetadata } from "./types.ts";
+import { ControllerMetadata, ControllerOptions } from "./types.ts";
+import { Adapter } from "../handler/adapter.ts";
 
 export const CONTROLLER_METADATA_KEY = Symbol.for("sentium.controller");
 
@@ -68,7 +67,13 @@ export class ControllerManager<Target extends Class> {
     Metadata.set(this.target, CONTROLLER_METADATA_KEY, meta);
   }
 
-  registerHandlers(_router: Router) {
+  registerHandlers(adapter: Adapter) {
     // TODO register the handlers
+
+    adapter.registerMethod({
+      method: "GET",
+      path: "/",
+      handler: () => new Response("Hello World"),
+    });
   }
 }

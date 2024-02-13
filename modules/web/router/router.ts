@@ -1,15 +1,15 @@
 import { Class } from "../../common/mod.ts";
-import { Hono } from "../../dep/hono.ts";
 import { ControllerManager } from "../controller/manager.ts";
+import { Adapter } from "../handler/adapter.ts";
 
-export class Router {
-  readonly handle: Hono;
-
-  constructor(controllers: Class[] = []) {
-    this.handle = new Hono();
-
+export class Router<A extends Adapter> {
+  constructor(public readonly adapter: A, controllers: Class[] = []) {
     // register all controllers
     controllers.forEach((controller) => this.registerController(controller));
+  }
+
+  get handle(): A["handle"] {
+    return this.adapter.handle;
   }
 
   private registerController(controller: Class) {
@@ -23,6 +23,6 @@ export class Router {
     }
 
     // let the controller register its handlers
-    manager.registerHandlers(this);
+    manager.registerHandlers(this.adapter);
   }
 }
