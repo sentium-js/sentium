@@ -15,6 +15,11 @@ export const controller = <
     options = { path: options };
   }
 
-  // declare the class as a controller
-  new ControllerManager(target).declare(options, injects);
+  const controller = new ControllerManager(target);
+
+  // declare the controller with the options
+  controller.declare(options);
+
+  // declare the controller as injectable
+  controller.declareInjects(injects);
 };

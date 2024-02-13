@@ -1,8 +1,7 @@
 import { Method } from "../../common/mod.ts";
-import { Meta } from "../meta/meta.ts";
-import { defaultMethodMeta, METHOD_META_KEY } from "./manager.ts";
+import { MethodManager } from "./manager.ts";
 import { ParamInjects, ParamTypes } from "./param/types.ts";
-import { MethodMetaMap, MethodOptions } from "./types.ts";
+import { MethodOptions } from "./types.ts";
 import { createMethodShortcut } from "./utils.ts";
 
 export const method =
@@ -15,16 +14,8 @@ export const method =
       throw new Error("Method decorators can't be used on static methods");
     }
 
-    const meta = Meta.of<Target, MethodMetaMap>(target);
-
-    // set default method meta
-    meta.default(METHOD_META_KEY, defaultMethodMeta);
-
-    // merge with options
-    meta.set(METHOD_META_KEY, {
-      ...meta.get(METHOD_META_KEY),
-      ...options,
-    });
+    const method = new MethodManager(target);
+    method.declare(options);
   };
 
 export const inject =
@@ -37,16 +28,8 @@ export const inject =
       throw new Error("Method decorators can't be used on static methods");
     }
 
-    const meta = Meta.of<Target, MethodMetaMap>(target);
-
-    // set default method meta
-    meta.default(METHOD_META_KEY, defaultMethodMeta);
-
-    // merge with options
-    meta.set(METHOD_META_KEY, {
-      ...meta.get(METHOD_META_KEY),
-      params,
-    });
+    const method = new MethodManager(target);
+    method.declare({ params });
   };
 
 // -- method shortcuts --

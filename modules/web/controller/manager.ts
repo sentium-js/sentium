@@ -1,12 +1,18 @@
 import { Class } from "../../common/mod.ts";
 import { InjectableManager } from "../../injectable/mod.ts";
 import { Metadata } from "../../metadata/mod.ts";
-import { ControllerMetadata, ControllerOptions } from "./types.ts";
+import { ControllerMetadata } from "./types.ts";
 import { HandlerInfo } from "../handler/types.ts";
 import { MethodManager } from "../method/manager.ts";
 import { MethodHandlerInfo, MiddlewareHandlerInfo } from "../handler/types.ts";
+import { Interceptable } from "../method/interceptor/types.ts";
 
 export const CONTROLLER_METADATA_KEY = Symbol.for("sentium.controller");
+
+export const defaultControllerMeta: ControllerMetadata = {
+  path: "/",
+  interceptors: [],
+};
 
 export class ControllerManager<Target extends Class> {
   private readonly injectable: InjectableManager<Target>;
@@ -40,36 +46,49 @@ export class ControllerManager<Target extends Class> {
     return meta;
   }
 
+  private set metadata(meta: ControllerMetadata) {
+    Metadata.set(this.target, CONTROLLER_METADATA_KEY, meta);
+  }
+
+  get interceptors(): Class<any, Interceptable>[] {
+    return this.metadata.interceptors;
+  }
+
   /**
    * Declare the class as controller with the given options and injects.
    *
    * @param options Options for the controller.
-   * @param injects List of classes to inject into the class.
    */
-  declare<Injects extends readonly Class[]>(
-    options: ControllerOptions,
-    injects: Injects,
+  declare(
+    options: Partial<ControllerMetadata>,
   ): void {
-    // Check if the class is already declared as controller and throw an error if so
-    if (this.declared) {
-      throw new Error(
-        `Failed to declare '${this.target.name}' as controller: Already an injectable.`,
-      );
+    // if the class is not declared yet, create the metadata with the default values and the given options
+    if (!this.declared) {
+      this.metadata = { ...defaultControllerMeta, ...options };
+      return;
     }
 
-    // delcare the controller as injectable
-    this.injectable.declare(injects);
-
-    // Create the metadata of the controller class
-    const meta: ControllerMetadata = {
-      options,
-    };
-
-    // Declare the class as controller by setting the metadata
-    Metadata.set(this.target, CONTROLLER_METADATA_KEY, meta);
+    // merge the options with the existing metadata
+    this.metadata = { ...this.metadata, ...options };
   }
 
-  getHandlerInfo(instance: InstanceType<Class>): HandlerInfo[] {
+  /**
+   * Declare the injects of the controller.
+   *
+   * @param injects The injects of the controller.
+   */
+  declareInjects(injects: readonly Class[]): void {
+    // delcare the controller as injectable with the given injects
+    this.injectable.declare(injects);
+  }
+
+  /**
+   * Get all handler (methods with interceptors and middlewares) information of the controller.
+   *
+   * @param interceptors The global interceptors of the router.
+   * @returns
+   */
+  getHandlerInfo(interceptors: Class<any, Interceptable>[]): HandlerInfo[] {
     const methods = Object.entries(
       Object.getOwnPropertyDescriptors(this.target.prototype),
     ).map<MethodHandlerInfo | undefined>(([key, descriptor]) => {
@@ -85,7 +104,10 @@ export class ControllerManager<Target extends Class> {
         type: "method",
         method: method.method,
         path: method.path,
-        handler: method.getHandler(instance),
+        handler: method.getHandler(this.target, [
+          ...interceptors,
+          ...this.interceptors,
+        ]),
       };
     }).filter(Boolean) as MethodHandlerInfo[];
 
