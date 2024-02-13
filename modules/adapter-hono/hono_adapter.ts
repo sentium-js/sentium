@@ -1,41 +1,92 @@
-import {
-  Adapter,
-  AdapterMethodHandler,
-  AdapterMiddlewareHandler,
-  ExecutionRequest,
-  MethodRegistration,
-  MiddlewareRegistration,
-} from "../web/mod.ts";
-import { Handler, Hono, MiddlewareHandler } from "./dep.ts";
+import { Adapter, AdapterContextGetter, ExecutionContext } from "../web/mod.ts";
+import { Context, Hono } from "./dep.ts";
 
-export class HonoAdapter implements Adapter<Request, Hono> {
-  constructor(private hono: Hono = new Hono()) {}
+const HONO_CONTEXT_KEY = Symbol();
 
-  get handle(): Hono {
-    return this.hono;
+type HonoEnv = {
+  Variables: { [HONO_CONTEXT_KEY]: ExecutionContext<Request> | undefined };
+};
+
+/**
+ * An adapter for the Hono framework.
+ */
+export class HonoAdapter<T extends Hono> implements Adapter<Request, Hono> {
+  private readonly hono: Hono<T>;
+
+  /**
+   * Initializes the adapter with the given hono instance.
+   *
+   * @param hono The hono instance to use (optional). If not provided, a new instance will be created.
+   */
+  constructor(hono?: T) {
+    this.hono = hono ?? new Hono();
   }
 
-  registerMethod({ method, path, handler }: MethodRegistration<Request>): void {
-    this.hono.on(method, path, this.createMethodHandler(handler));
+  /**
+   * The hono instance used by this adapter.
+   *
+   * Used this to start listening for incoming requests.
+   */
+  get handle(): T {
+    return this.hono as T;
   }
 
-  registerMiddleware({ path, handler }: MiddlewareRegistration<Request>): void {
-    this.hono.use(path, this.createMiddlewareHandler(handler));
+  registerMethod(
+    method: string,
+    path: string,
+    handler: (ctx: ExecutionContext) => Promise<void>,
+    getContext: AdapterContextGetter<Request>,
+  ): void {
+    this.hono.on(method, path, async ({ get, req, env }: Context<HonoEnv>) => {
+      // resolve the current execution context
+      const ctx = getContext(
+        // the current execution context from hono if present (otherwise it will created automatically)
+        get(HONO_CONTEXT_KEY),
+        // the raw request from hono
+        req.raw,
+        // the url params from hono
+        req.param(),
+        // the environment variables from hono
+        env,
+      );
+
+      // execute the handler
+      await handler(ctx);
+
+      // return the response from the execution context
+      return ctx.res.toResponse();
+    });
   }
 
-  private createMethodHandler(handler: AdapterMethodHandler<Request>): Handler {
-    return async (ctx) => {
-      const req = new ExecutionRequest(ctx.req.raw, ctx.req.param());
-      return await handler(req, ctx.env);
-    };
-  }
+  registerMiddleware(
+    path: string,
+    handler: (
+      ctx: ExecutionContext,
+      next: () => Promise<void>,
+    ) => Promise<void>,
+    getContext: AdapterContextGetter<Request>,
+  ): void {
+    this.hono.use(
+      path,
+      async (
+        { get, req, env }: Context<HonoEnv>,
+        next: () => Promise<void>,
+      ) => {
+        // resolve the current execution context
+        const ctx = getContext(
+          // the current execution context from hono if present (otherwise it will created automatically)
+          get(HONO_CONTEXT_KEY),
+          // the raw request from hono
+          req.raw,
+          // the url params from hono
+          req.param(),
+          // the environment variables from hono
+          env,
+        );
 
-  private createMiddlewareHandler(
-    handler: AdapterMiddlewareHandler<Request>,
-  ): MiddlewareHandler {
-    return async (ctx, next) => {
-      const req = new ExecutionRequest(ctx.req.raw, ctx.req.param() as any);
-      await handler(req, ctx.env, () => next());
-    };
+        // execute the handler and forward the next function
+        await handler(ctx, () => next());
+      },
+    );
   }
 }

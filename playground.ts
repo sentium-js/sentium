@@ -1,12 +1,18 @@
-import { controller, method, Router } from "./modules/web/mod.ts";
+import {
+  controller,
+  get,
+  header,
+  inject,
+  param,
+  Router,
+} from "./modules/web/mod.ts";
 import { HonoAdapter } from "./modules/adapter-hono/mod.ts";
 import { injectable } from "./modules/injectable/mod.ts";
-import { param, params } from "./modules/web/mod.ts";
 
 @injectable()
 class Service {
-  getInfo() {
-    return "Hello World";
+  getInfo(path: string | null) {
+    return "Hello World - " + path;
   }
 }
 
@@ -14,10 +20,16 @@ class Service {
 class MyController {
   constructor(private service: Service) {}
 
-  @method({ path: "/info" })
-  @params(param("user"))
-  getInfo(user: string | null) {
-    return this.service.getInfo();
+  @get("/:path")
+  @inject(param("path"))
+  getInfo(path: string | null) {
+    return this.service.getInfo(path);
+  }
+
+  @get()
+  @inject(header("User-Agent"))
+  index(header: string | null) {
+    return "You are at the index page. Your user agent is: " + header;
   }
 }
 

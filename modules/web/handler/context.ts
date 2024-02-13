@@ -1,13 +1,13 @@
 import { Body } from "./types.ts";
 
 export type ExecutionContext<Req extends Request = Request, Env = unknown> = {
-  req: ExecutionRequest<Req>;
-  res: ExecutionResponse;
+  req: HttpRequest<Req>;
+  res: HttpResponse;
   env: Env;
   meta: Map<string, unknown>;
 };
 
-export class ExecutionRequest<Raw extends Request> {
+export class HttpRequest<Raw extends Request> {
   constructor(private _request: Raw, private _params: Record<string, string>) {}
 
   param(name: string): string | null {
@@ -71,7 +71,7 @@ export class ExecutionRequest<Raw extends Request> {
   }
 }
 
-export class ExecutionResponse {
+export class HttpResponse {
   private _headers: Headers;
   private _status: number;
   private _body: Body;
@@ -82,18 +82,24 @@ export class ExecutionResponse {
     this._body = undefined;
   }
 
-  status(value: number): ExecutionResponse {
+  status(value: number): HttpResponse {
     this._status = value;
     return this;
   }
 
-  header(key: string, value: string): ExecutionResponse {
+  header(key: string, value: string): HttpResponse {
     this._headers.set(key, value);
     return this;
   }
 
-  body(value: Body): ExecutionResponse {
+  body(value: Body): HttpResponse {
     this._body = value;
+    return this;
+  }
+
+  json<T = unknown>(json: T): HttpResponse {
+    this._headers.set("Content-Type", "application/json");
+    this._body = JSON.stringify(json);
     return this;
   }
 

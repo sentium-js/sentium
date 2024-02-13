@@ -7,4 +7,5 @@ export {
   type Wrapped,
   type WrapperClass,
 } from "./wrapped.ts";
-export { InjectableManager } from "./manager.ts";
+export { defaultInjectableScope, InjectableManager } from "./manager.ts";
+export { type InjectableScope } from "./types.ts";

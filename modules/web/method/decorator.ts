@@ -1,10 +1,9 @@
 import { Method } from "../../common/mod.ts";
 import { Meta } from "../meta/meta.ts";
-import { defaultMethodMeta } from "./method.ts";
-import { METHOD_META_KEY } from "./method.ts";
-import { ParamTypes } from "./param/types.ts";
-import { ParamInjects } from "./param/types.ts";
+import { defaultMethodMeta, METHOD_META_KEY } from "./manager.ts";
+import { ParamInjects, ParamTypes } from "./param/types.ts";
 import { MethodMetaMap, MethodOptions } from "./types.ts";
+import { createMethodShortcut } from "./utils.ts";
 
 export const method =
   (options: MethodOptions = {}) =>
@@ -28,7 +27,7 @@ export const method =
     });
   };
 
-export const params =
+export const inject =
   <const Params extends ParamInjects>(...params: Params) =>
   <This, Target extends Method<This, ParamTypes<Params>>>(
     target: Target,
@@ -49,3 +48,15 @@ export const params =
       params,
     });
   };
+
+// -- method shortcuts --
+
+export const get = createMethodShortcut("GET");
+
+export const post = createMethodShortcut("POST");
+
+export const put = createMethodShortcut("PUT");
+
+export const patch = createMethodShortcut("PATCH");
+
+export const del = createMethodShortcut("DELETE");

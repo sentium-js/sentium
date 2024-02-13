@@ -8,3 +8,8 @@ export const param =
 export const query =
   (query: string): ParamResolver<string | null> => (ctx: ExecutionContext) =>
     ctx.req.query(query);
+
+export const header = (header: string): ParamResolver<string | null> =>
+(
+  ctx: ExecutionContext,
+) => ctx.req.header(header);

@@ -2,7 +2,7 @@ import { Class, Method } from "../../common/mod.ts";
 import { Meta } from "./meta.ts";
 import { MetaMap, MetaValue } from "./types.ts";
 
-export const setMeta = <
+export const meta = <
   M extends MetaMap,
   Key extends keyof M,
 >(

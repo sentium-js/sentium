@@ -1,4 +1,4 @@
-import { METHOD_META_KEY } from "./method.ts";
+import { METHOD_META_KEY } from "./manager.ts";
 import { ParamInjects } from "./param/types.ts";
 
 export type MethodOptions = {

@@ -2,7 +2,9 @@ import { Class } from "../../common/mod.ts";
 import { InjectableManager } from "../../injectable/mod.ts";
 import { Metadata } from "../../metadata/mod.ts";
 import { ControllerMetadata, ControllerOptions } from "./types.ts";
-import { Adapter } from "../handler/adapter.ts";
+import { HandlerInfo } from "../handler/types.ts";
+import { MethodManager } from "../method/manager.ts";
+import { MethodHandlerInfo, MiddlewareHandlerInfo } from "../handler/types.ts";
 
 export const CONTROLLER_METADATA_KEY = Symbol.for("sentium.controller");
 
@@ -67,13 +69,29 @@ export class ControllerManager<Target extends Class> {
     Metadata.set(this.target, CONTROLLER_METADATA_KEY, meta);
   }
 
-  registerHandlers(adapter: Adapter) {
-    // TODO register the handlers
+  getHandlerInfo(instance: InstanceType<Class>): HandlerInfo[] {
+    const methods = Object.entries(
+      Object.getOwnPropertyDescriptors(this.target.prototype),
+    ).map<MethodHandlerInfo | undefined>(([key, descriptor]) => {
+      // skip constructor
+      if (key === "constructor") return undefined;
 
-    adapter.registerMethod({
-      method: "GET",
-      path: "/",
-      handler: () => new Response("Hello World"),
-    });
+      const method = new MethodManager(descriptor.value);
+
+      // skip methods that are not declared as controller methods
+      if (!method.declared) return undefined;
+
+      return {
+        type: "method",
+        method: method.method,
+        path: method.path,
+        handler: method.getHandler(instance),
+      };
+    }).filter(Boolean) as MethodHandlerInfo[];
+
+    // TODO get middleware handlers
+    const middlewares: MiddlewareHandlerInfo[] = [];
+
+    return [...middlewares, ...methods];
   }
 }
