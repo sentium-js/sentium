@@ -2,7 +2,7 @@ import { InjectableScope } from "../../injectable/mod.ts";
 import { Logger } from "../logger/logger.ts";
 import { Body } from "./types.ts";
 
-export type ExecutionContext<Req extends Request = Request, Env = unknown> = {
+export type Context<Req extends Request = Request, Env = unknown> = {
   /**
    * The incoming request with access to the raw request from the adapter.
    */
@@ -34,6 +34,10 @@ export type ExecutionContext<Req extends Request = Request, Env = unknown> = {
    * The logger which can be used to log messages.
    */
   logger: Logger;
+
+  // TODO add method handler and controller to the context for meta data extraction
+  method: any;
+  controller: any;
 };
 
 export class HttpRequest<Raw extends Request> {

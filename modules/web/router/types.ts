@@ -1,56 +1,78 @@
-import { Class } from "../../common/mod.ts";
-import { InjectableScope } from "../../injectable/mod.ts";
-import { Adapter } from "../handler/adapter.ts";
-import { LogFunction } from "../logger/logger.ts";
-import { Interceptable } from "../method/interceptor/types.ts";
+import { Class, Method } from "../../common/mod.ts";
 import { Middleware } from "../middleware/types.ts";
 
-export type RouterOptions<A extends Adapter> = {
-  /**
-   * The adapter used for routing incoming requests.
-   */
-  adapter: A;
+export type HandlerInfo = MethodHandlerInfo | MiddlewareHandlerInfo;
+
+export type MethodHandlerInfo = {
+  type: "method";
 
   /**
-   * List of controllers which should be registered on startup.
+   * The HTTP method to match.
    */
-  controllers?: Class[];
+  method: string;
 
   /**
-   * The scope which is used to resolve dependencies.
+   * The path to match.
    */
-  scope?: InjectableScope;
+  path: string;
 
   /**
-   * Preload all controllers with their dependecies on startup.
+   * The priority of the handler.
    *
-   * If enabled (`true`): All controllers (and their dependencies)
-   * are preloaded on startup which leads to a faster response time
-   * on the first request but a longer startup time of the server.
-   * *Recommanded for long-running servers like a dedicated node.js process.*
+   * If multiple method handlers match, the one with the highest priority is called.
+   */
+  priority: number;
+
+  /**
+   * The method handler to call if the method and path match.
+   */
+  handler: Method;
+
+  /**
+   * The controller that the handler is a method of.
+   */
+  controller: Class;
+};
+
+export type MiddlewareHandlerInfo = {
+  type: "middleware";
+
+  /**
+   * The path to match.
+   */
+  path: string;
+
+  /**
+   * The order the handler should be called in. Lower numbers are called first.
+   */
+  order: number;
+
+  /**
+   * The middleware handler to call if the path matches.
+   */
+  handler: Class<any[], Middleware>;
+};
+
+export type MatchResult = {
+  /**
+   * The middleware handlers that matched in the right order.
+   */
+  middleware: Class<any[], Middleware>[];
+
+  /**
+   * The matched handler with the highest priority.
    *
-   * If disabled (`false`): Controllers and their dependencies
-   * are loaded on the first request which leads to a slower response time
-   * on the first request but a faster startup time of the server.
-   * Benefit: Controllers and their dependencies which are not used are not loaded at all.
-   * *Recommanded for short-running servers like a serverless function.*
-   *
-   * @default false
+   * If no handler matches, this is undefined. (404)
    */
-  preload?: boolean;
+  method?: {
+    /**
+     * The method handler that matched.
+     */
+    handler: Method;
 
-  /**
-   * Provide a custom logger function for the router.
-   */
-  logger?: LogFunction;
-
-  /**
-   * List of interceptors which should be registered as global interceptors.
-   */
-  interceptors?: Class<any, Interceptable>[];
-
-  /**
-   * List of middlewares which should be registered as global middlewares.
-   */
-  middlewares?: Class<any, Middleware>[];
+    /**
+     * The controller that the handler is a method of.
+     */
+    controller: Class;
+  };
 };

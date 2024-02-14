@@ -22,4 +22,4 @@ export { type Interceptable } from "./method/interceptor/types.ts";
 export * from "./method/param/common.ts";
 export { type ParamResolver, type ParamType } from "./method/param/types.ts";
 
-export { Router } from "./router/router.ts";
+export { Router } from "./app/app.ts";
