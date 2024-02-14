@@ -6,7 +6,7 @@ import { MethodManager } from "../manager.ts";
 /**
  * Set interceptors for a controller or method to be executed before the handler.
  *
- * That the order of the interceptors is important. The first interceptor
+ * The order of the interceptors are important. The first interceptor
  * will be executed first and the last interceptor will be executed last.
  *
  * If this decorator is used multiple times, the interceptors will be overwritten,

@@ -12,6 +12,7 @@ export const CONTROLLER_METADATA_KEY = Symbol.for("sentium.controller");
 export const defaultControllerMeta: ControllerMetadata = {
   path: "/",
   interceptors: [],
+  middlewares: [],
 };
 
 export class ControllerManager<Target extends Class> {

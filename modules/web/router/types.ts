@@ -3,6 +3,7 @@ import { InjectableScope } from "../../injectable/mod.ts";
 import { Adapter } from "../handler/adapter.ts";
 import { LogFunction } from "../logger/logger.ts";
 import { Interceptable } from "../method/interceptor/types.ts";
+import { Middleware } from "../middleware/types.ts";
 
 export type RouterOptions<A extends Adapter> = {
   /**
@@ -47,4 +48,9 @@ export type RouterOptions<A extends Adapter> = {
    * List of interceptors which should be registered as global interceptors.
    */
   interceptors?: Class<any, Interceptable>[];
+
+  /**
+   * List of middlewares which should be registered as global middlewares.
+   */
+  middlewares?: Class<any, Middleware>[];
 };
