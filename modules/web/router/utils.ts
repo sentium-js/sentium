@@ -5,7 +5,7 @@
  * @returns The joined path with a leading slash, without duplicate slashes and without trailing slashes.
  */
 export const joinPaths = (...paths: string[]): string => {
-  return ["", ...paths].join("/").replace(/\/+/g, "/");
+  return ["", ...paths].join("/").replace(/\/+/g, "/").replace(/\/$/, "");
 };
 
 /**

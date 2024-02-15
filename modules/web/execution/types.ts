@@ -144,41 +144,37 @@ export class HttpRequest<Raw extends Request> {
 }
 
 export class HttpResponse {
-  private _headers: Headers;
-  private _status: number;
-  private _body: Body;
+  headers: Headers;
+  status: number;
+  body: Body;
 
   constructor() {
-    this._headers = new Headers();
-    this._status = 200;
-    this._body = undefined;
-  }
-
-  status(value: number): HttpResponse {
-    this._status = value;
-    return this;
+    this.headers = new Headers();
+    this.status = 200;
+    this.body = undefined;
   }
 
   header(key: string, value: string): HttpResponse {
-    this._headers.set(key, value);
-    return this;
-  }
-
-  body(value: Body): HttpResponse {
-    this._body = value;
+    this.headers.set(key, value);
     return this;
   }
 
   json<T = unknown>(json: T): HttpResponse {
-    this._headers.set("Content-Type", "application/json");
-    this._body = JSON.stringify(json);
+    this.headers.set("Content-Type", "application/json");
+    this.body = JSON.stringify(json);
+    return this;
+  }
+
+  text(text: string): HttpResponse {
+    this.headers.set("Content-Type", "text/plain");
+    this.body = text;
     return this;
   }
 
   toResponse(): Response {
-    return new Response(this._body, {
-      headers: this._headers,
-      status: this._status,
+    return new Response(this.body, {
+      headers: this.headers,
+      status: this.status,
     });
   }
 }
