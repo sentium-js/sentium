@@ -36,6 +36,10 @@ const buildModule = async (
     shims: {},
     test: false,
     mappings,
+    compilerOptions: {
+      lib: ["DOM", "ESNext"],
+      target: "ES2022",
+    },
   });
 
   // copy README.md
@@ -64,6 +68,46 @@ switch (name) {
         "./modules/metadata/mod.ts": {
           name: "@sentium/metadata",
           version: `^${project.version}`,
+        },
+      },
+    });
+    break;
+  case "web":
+    await buildModule({
+      name: "web",
+      mappings: {
+        "./modules/common/mod.ts": {
+          name: "@sentium/common",
+          version: `^${project.version}`,
+        },
+        "./modules/metadata/mod.ts": {
+          name: "@sentium/metadata",
+          version: `^${project.version}`,
+        },
+        "./modules/injectable/mod.ts": {
+          name: "@sentium/injectable",
+          version: `^${project.version}`,
+        },
+        // hono routers
+        "./modules/web/router/hono/router.ts": {
+          name: "hono",
+          version: `^4.0.1`,
+          subPath: "router",
+        },
+        "./modules/web/router/hono/reg-exp-router.ts": {
+          name: "hono",
+          version: `^4.0.1`,
+          subPath: "router/reg-exp-router",
+        },
+        "./modules/web/router/hono/smart-router.ts": {
+          name: "hono",
+          version: `^4.0.1`,
+          subPath: "router/smart-router",
+        },
+        "./modules/web/router/hono/trie-router.ts": {
+          name: "hono",
+          version: `^4.0.1`,
+          subPath: "router/trie-router",
         },
       },
     });

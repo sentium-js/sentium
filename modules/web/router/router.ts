@@ -1,7 +1,11 @@
+import { Result } from "./hono/router.ts";
+import { SmartRouter } from "./hono/smart-router.ts";
+import { RegExpRouter } from "./hono/reg-exp-router.ts";
+import { TrieRouter } from "./hono/trie-router.ts";
+
 import { InjectableScope, resolve } from "../../injectable/mod.ts";
 import { LogColor } from "../logger/colors.ts";
 import { Logger } from "../logger/logger.ts";
-import { RegExpRouter, Result, SmartRouter, TrieRouter } from "./hono.ts";
 import {
   Handler,
   HandlerMatch,

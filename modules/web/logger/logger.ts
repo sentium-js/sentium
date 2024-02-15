@@ -1,4 +1,4 @@
-import { injectable } from "../../injectable/mod.ts";
+import { InjectableManager } from "../../injectable/mod.ts";
 import { LogColor } from "./colors.ts";
 
 export type LogFunction = (
@@ -17,7 +17,6 @@ const LogTypeOption: Record<LogType, { short: string; color: string }> = {
   log: { short: "LOG", color: LogColor.bg.white },
 };
 
-@injectable()
 export class Logger {
   send: LogFunction;
 
@@ -60,3 +59,6 @@ export class Logger {
     this.send("log", service, ...messages);
   }
 }
+
+// workaround to avoid decorators directly
+new InjectableManager(Logger).declare([]);
