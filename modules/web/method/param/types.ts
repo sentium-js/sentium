@@ -1,8 +1,8 @@
 import { MaybePromise } from "../../../common/mod.ts";
-import { ExecutionContext } from "../../handler/context.ts";
+import { Context } from "../../execution/types.ts";
 
 export type ParamResolver<T = unknown> = (
-  ctx: ExecutionContext,
+  ctx: Context,
 ) => MaybePromise<T>;
 
 export type ParamInjects = readonly ParamResolver[];

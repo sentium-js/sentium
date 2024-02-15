@@ -1,9 +1,12 @@
 import { Class, Method } from "../../common/mod.ts";
+import { Interceptable } from "../method/interceptor/types.ts";
 import { Middleware } from "../middleware/types.ts";
 
-export type HandlerInfo = MethodHandlerInfo | MiddlewareHandlerInfo;
+export type MatchParams = Record<string, string>;
 
-export type MethodHandlerInfo = {
+export type Handler = MethodHandler | MiddlewareHandler;
+
+export type MethodHandler = {
   type: "method";
 
   /**
@@ -26,15 +29,20 @@ export type MethodHandlerInfo = {
   /**
    * The method handler to call if the method and path match.
    */
-  handler: Method;
+  target: Method;
 
   /**
    * The controller that the handler is a method of.
    */
   controller: Class;
+
+  /**
+   * The interceptors that should be called before the method handler.
+   */
+  interceptors: Class<any[], Interceptable>[];
 };
 
-export type MiddlewareHandlerInfo = {
+export type MiddlewareHandler = {
   type: "middleware";
 
   /**
@@ -43,36 +51,40 @@ export type MiddlewareHandlerInfo = {
   path: string;
 
   /**
-   * The order the handler should be called in. Lower numbers are called first.
+   * The priority of the handler.
+   *
+   * Higher priority middleware handlers are called first.
    */
-  order: number;
+  priority: number;
 
   /**
    * The middleware handler to call if the path matches.
    */
-  handler: Class<any[], Middleware>;
+  target: Class<any[], Middleware>;
 };
 
 export type MatchResult = {
   /**
    * The middleware handlers that matched in the right order.
    */
-  middleware: Class<any[], Middleware>[];
+  middlewares: HandlerMatch<MiddlewareHandler>[];
 
   /**
    * The matched handler with the highest priority.
    *
    * If no handler matches, this is undefined. (404)
    */
-  method?: {
-    /**
-     * The method handler that matched.
-     */
-    handler: Method;
+  method?: HandlerMatch<MethodHandler>;
+};
 
-    /**
-     * The controller that the handler is a method of.
-     */
-    controller: Class;
-  };
+export type HandlerMatch<T extends Handler = Handler> = {
+  /**
+   * The handler that matched.
+   */
+  handler: T;
+
+  /**
+   * The parameters that were extracted from the path of the handler.
+   */
+  params: MatchParams;
 };

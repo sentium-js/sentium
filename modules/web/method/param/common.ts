@@ -1,15 +1,19 @@
+import { Context } from "../../execution/types.ts";
 import { ParamResolver } from "./types.ts";
-import { ExecutionContext } from "../../handler/context.ts";
 
-export const param =
-  (param: string): ParamResolver<string | null> => (ctx: ExecutionContext) =>
-    ctx.req.param(param);
+export const ctx: ParamResolver<Context> = (ctx: Context) => ctx;
 
-export const query =
-  (query: string): ParamResolver<string | null> => (ctx: ExecutionContext) =>
-    ctx.req.query(query);
+export const param = <T extends string | null = string | null>(
+  param: string,
+): ParamResolver<T> =>
+(ctx: Context) => ctx.req.param(param) as T;
 
-export const header = (header: string): ParamResolver<string | null> =>
-(
-  ctx: ExecutionContext,
-) => ctx.req.header(header);
+export const query = <T extends string | null = string | null>(
+  query: string,
+): ParamResolver<T> =>
+(ctx: Context) => ctx.req.query(query) as T;
+
+export const header = <T extends string | null = string | null>(
+  header: string,
+): ParamResolver<T> =>
+(ctx: Context) => ctx.req.header(header) as T;

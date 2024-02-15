@@ -6,11 +6,13 @@ import { Middleware } from "../middleware/types.ts";
 export type MethodOptions = {
   method?: string;
   path?: string;
+  priority?: number;
 };
 
 export type MethodMetadata = {
   method: string;
   path: string;
+  priority: number;
 
   params: ParamInjects;
   interceptors: Class<any, Interceptable>[];

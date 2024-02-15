@@ -1,69 +1,55 @@
-import {
-  controller,
-  get,
-  header,
-  inject,
-  intercept,
-  param,
-  Router,
-} from "./modules/web/mod.ts";
-import { HonoAdapter } from "./modules/adapter-hono/mod.ts";
 import { injectable } from "./modules/injectable/mod.ts";
-import { createInterceptor } from "./modules/web/mod.ts";
+import {} from "./modules/web/mod.ts";
+import {
+  Application,
+  Context,
+  controller,
+  ctx,
+  get,
+  inject,
+  Middleware,
+  param,
+} from "./modules/web/mod.ts";
 
-const Inter1 = createInterceptor(async (_ctx, next) => {
-  console.log("Before 1");
-  const result = await next();
-  console.log("After 1");
+@injectable([], async () => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return new AsyncDependency(Date.now());
+})
+class AsyncDependency {
+  constructor(private readonly now: number) {}
 
-  return result;
-});
+  getInitializedNow() {
+    return this.now;
+  }
+}
 
-const Inter2 = createInterceptor(async (_ctx, next) => {
-  console.log("Before 2");
-  const result = await next();
-  console.log("After 2");
+@controller({ path: "/users" }, [AsyncDependency])
+class UserController {
+  constructor(private readonly dep: AsyncDependency) {}
 
-  return result;
-});
+  @get("/")
+  getAll() {
+    return "All users with initialized now: " + this.dep.getInitializedNow();
+  }
+
+  @get("/:id")
+  @inject(param<string>("id"), ctx)
+  getById(id: string, ctx: Context) {
+    // throw new Error("My Error");
+    return `User with id: ${id}`;
+  }
+}
 
 @injectable()
-class Service {
-  constructor() {
-    console.log("Service created");
-  }
-
-  getInfo(path: string | null) {
-    return "Hello World - " + path;
+class Middle implements Middleware {
+  async handle(ctx: Context, next: () => Promise<void>): Promise<void> {
+    await next();
   }
 }
 
-@controller("/", [Service])
-@intercept(Inter1)
-class MyController {
-  constructor(private service: Service) {
-    console.log("Controller created");
-  }
+const app = new Application();
 
-  @get("/:path")
-  @inject(param("path"))
-  getInfo(path: string | null) {
-    return this.service.getInfo(path);
-  }
+app.registerController(UserController);
+app.registerMiddleware(Middle);
 
-  @get()
-  @inject(header("User-Agent"))
-  @intercept(Inter2)
-  index(header: string | null) {
-    console.log("method");
-    return "You are at the index page. Your user agent is: " + header;
-  }
-}
-
-const router = new Router({
-  adapter: new HonoAdapter(),
-  controllers: [MyController],
-  interceptors: [Inter2],
-});
-
-Deno.serve((req) => router.handle.fetch(req));
+Deno.serve((req) => app.fetch(req));

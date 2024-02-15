@@ -1,18 +1,20 @@
 import { Class } from "../../common/mod.ts";
 import {
   defaultInjectableScope,
+  InjectableManager,
   InjectableScope,
-  preload,
+  preload as preloadInjectables,
   resolve,
 } from "../../injectable/mod.ts";
 import { ControllerManager } from "../controller/manager.ts";
-import { HttpResponse } from "../handler/context.ts";
-import { HttpRequest } from "../handler/context.ts";
 import { Logger } from "../logger/logger.ts";
-import { ApplicationOptions } from "./types.ts";
+import { ApplicationOptions, PreloadReturn } from "./types.ts";
 import { LogColor } from "../logger/colors.ts";
 import { Interceptable } from "../method/interceptor/types.ts";
 import { Router } from "../router/router.ts";
+import { executeHandlers } from "../execution/execution.ts";
+import { Middleware } from "../middleware/types.ts";
+import { joinPaths } from "../router/utils.ts";
 
 export class Application {
   private readonly router: Router;
@@ -23,21 +25,21 @@ export class Application {
   private preloadPromise: Promise<void> | undefined;
 
   constructor(
-    options: ApplicationOptions,
+    options: ApplicationOptions = {},
   ) {
-    this.router = new Router();
     this.scope = options.scope ?? defaultInjectableScope;
+    this.logger = resolve(Logger, this.scope);
     this.preloaded = options.preload ?? false;
     this.interceptors = options.interceptors ?? [];
-    this.logger = resolve(Logger, this.scope);
 
     if (options.logger) this.logger.send = options.logger;
+    // set logger to noop if false is provided
+    else if (options.logger === false) this.logger.send = () => {};
 
     this.logger.info(
       "App",
       "Starting application...",
     );
-
     this.logger.debug(
       "App",
       "Scope:",
@@ -47,20 +49,26 @@ export class Application {
     );
     this.logger.debug("App", "Preload:", this.preloaded);
 
+    this.router = new Router(this.scope);
+
     // if preload is enabled and controllers are provided preload all controllers
     if (this.preloaded && options.controllers) {
       this.logger.info(
         "App",
         `Preloading ${options.controllers.length} controllers...`,
       );
-      this.preloadPromise = preload(options.controllers, this.scope).then(() =>
-        this.logger.info("App", "Preloading finished.")
-      );
+      this.preloadPromise = preloadInjectables(options.controllers, this.scope)
+        .then(() => this.logger.info("App", "Preloading finished."));
     }
 
     // register controllers
     options.controllers?.forEach((controller) =>
-      this.registerController(controller)
+      this.registerController(controller, false)
+    );
+
+    // register middlewares
+    options.middlewares?.forEach((middleware) =>
+      this.registerMiddleware(middleware, "*", false)
     );
   }
 
@@ -74,85 +82,116 @@ export class Application {
     return this.preloadPromise ?? Promise.resolve();
   }
 
-  async fetch<Req extends Request>(request: Req): Promise<Response> {
+  /**
+   * Handle the incoming request and return the response.
+   *
+   * @param request The incoming request.
+   * @param env Optional environment variables which will be available in the execution context.
+   * @returns The response of the request.
+   */
+  async fetch<Req extends Request>(
+    request: Req,
+    env?: unknown,
+  ): Promise<Response> {
     const url = new URL(request.url);
 
-    const handlers = this.router.match(request.method, url.pathname);
-    // TODO router resolving and handling
+    // get the handler matches from the router
+    const matches = this.router.match(request.method, url.pathname);
 
-    return new Response("Not implemented", { status: 501 });
+    // execute the handlers
+    const response = await executeHandlers({
+      request,
+      env,
+      matches,
+      scope: this.scope,
+    });
+
+    // return the response
+    return response;
   }
 
-  private registerController(target: Class) {
-    this.logger.info("Router", `Registering controller: ${target.name}`);
-    const controller = new ControllerManager(target);
+  /**
+   * Register a controller to the application.
+   *
+   * @param controllerClass The controller class to register.
+   * @param preload If true the controller with dependecies will be preloaded, otherwise not.
+   * @returns If preload is true the return value is a promise which resolves when the controller is preloaded, otherwise void.
+   */
+  registerController<Preload extends boolean>(
+    controllerClass: Class,
+    preload: Preload = false as Preload,
+  ): PreloadReturn<Preload> {
+    this.logger.info(
+      "App",
+      `Registering controller: ${
+        LogColor.fg.black + controllerClass.name + LogColor.reset
+      }`,
+    );
+    const controller = new ControllerManager(controllerClass);
 
     // check if the class is declared as controller
     if (!controller.declared) {
       throw new Error(
-        `Failed to register controller: ${target.name} is not declared as controller`,
+        `Failed to register controller: ${controllerClass.name} is not declared as controller`,
       );
     }
 
-    for (const info of controller.getHandlerInfo(this.interceptors)) {
-      // if (info.type === "method") {
-      //   this.logger.info(
-      //     `Controller/${target.name}`,
-      //     `Registering method: ${info.method} ${info.path}`,
-      //   );
-      //   this.adapter.registerMethod(
-      //     info.method,
-      //     info.path,
-      //     info.handler,
-      //     // TODO include method and controller into the context
-      //     // this is useful when middlewares extract metadata from the handlers to determine if the request should pass for example (auth)
-      //     this.getExectionContext.bind(this),
-      //   );
-      // } else if (info.type === "middleware") {
-      //   this.logger.info(
-      //     `Controller/${target.name}`,
-      //     `Registering middleware: ${info.path}`,
-      //   );
-      //   this.adapter.registerMiddleware(
-      //     info.path,
-      //     info.handler,
-      //     // TODO include method and controller into the context (same as above)
-      //     this.getExectionContext.bind(this),
-      //   );
-      // }
-    }
+    controller.getHandlers(this.interceptors).forEach((handler) =>
+      this.router.add(handler)
+    );
+
+    return (preload
+      ? preloadInjectables([controllerClass], this.scope)
+      : undefined) as PreloadReturn<Preload>;
   }
 
-  // private getExectionContext(
-  //   current: ExecutionContext | undefined,
-  //   req: Request,
-  //   params: Record<string, string>,
-  //   env: unknown,
-  // ): ExecutionContext {
-  //   // for now just return the current context if present
-  //   if (current) return current;
+  /**
+   * Register a middleware to the application.
+   *
+   * @param middlewareClass The middleware class to register (injectable which implements Middleware).
+   * @param path The path where the middleware should be registered. Default is "*".
+   * @param preload If true the middleware with dependecies will be preloaded, otherwise not.
+   * @returns If preload is true the return value is a promise which resolves when the middleware is preloaded, otherwise void.
+   */
+  registerMiddleware<Preload extends boolean>(
+    middlewareClass: Class<any[], Middleware>,
+    path = "*",
+    preload: Preload = false as Preload,
+  ): PreloadReturn<Preload> {
+    const correctPath = joinPaths(path);
 
-  //   // create a new context
-  //   const ctx: ExecutionContext = {
-  //     // create a http request from the raw request and the url params
-  //     req: new HttpRequest(req, params),
+    this.logger.info(
+      "App",
+      `Registering middleware: ${
+        LogColor.fg.black + middlewareClass.name + LogColor.reset
+      } at ${LogColor.fg.magenta + correctPath + LogColor.reset}`,
+    );
+    const middleware = new InjectableManager(middlewareClass);
 
-  //     // initialize a new http response
-  //     res: new HttpResponse(),
+    // check if the class is declared as injectable
+    if (!middleware.declared) {
+      throw new Error(
+        `Failed to register middleware: ${middlewareClass.name} is not declared as injectable`,
+      );
+    }
 
-  //     // passthrough the environment variables
-  //     env,
+    // check if the class has a handle method
+    if (!middlewareClass.prototype.handle) {
+      throw new Error(
+        `Failed to register middleware: ${middlewareClass.name} does not have a handle method`,
+      );
+    }
 
-  //     // initialize an empty data map
-  //     data: new Map(),
+    this.router.add({
+      type: "middleware",
+      path: correctPath,
+      // TODO make priority configurable
+      priority: 0,
+      target: middlewareClass,
+    });
 
-  //     // the injection scope the router was created with
-  //     scope: this.scope,
-
-  //     // passthrough the logger
-  //     logger: this.logger,
-  //   };
-
-  //   return ctx;
-  // }
+    return (preload
+      ? preloadInjectables([middlewareClass], this.scope)
+      : undefined) as PreloadReturn<Preload>;
+  }
 }

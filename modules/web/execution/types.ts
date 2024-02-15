@@ -1,43 +1,62 @@
 import { InjectableScope } from "../../injectable/mod.ts";
 import { Logger } from "../logger/logger.ts";
-import { Body } from "./types.ts";
+import { HandlerMatch } from "../router/types.ts";
+import {
+  Handler,
+  MatchResult,
+  MethodHandler,
+  MiddlewareHandler,
+} from "../router/types.ts";
+
+export type Body = BodyInit | null | undefined;
 
 export type Context<Req extends Request = Request, Env = unknown> = {
   /**
    * The incoming request with access to the raw request from the adapter.
    */
-  req: HttpRequest<Req>;
+  readonly req: HttpRequest<Req>;
 
   /**
    * The response which will be sent to the client but can be modified before as desired.
    */
-  res: HttpResponse;
+  readonly res: HttpResponse;
 
   /**
    * The environment variables which gets injected by the adapter.
    */
-  env: Env;
+  readonly env: Env;
 
   /**
    * A map with arbitrary data which can be used to store data during the request.
    */
-  data: Map<PropertyKey, unknown>;
+  readonly data: Map<PropertyKey, unknown>;
 
   /**
    * The injection scope which is used to resolve dependencies.
    *
    * This can be set in the router.
    */
-  scope: InjectableScope;
+  readonly scope: InjectableScope;
 
   /**
    * The logger which can be used to log messages.
    */
-  logger: Logger;
+  readonly logger: Logger;
 
-  // TODO add method handler and controller to the context for meta data extraction
-  method: any;
-  controller: any;
+  /**
+   * The method handler that matched the request.
+   */
+  method?: HandlerMatch<MethodHandler>;
+
+  /**
+   * List of all middleware handlers that matched the request and will be called in order.
+   */
+  middlewares: HandlerMatch<MiddlewareHandler>[];
+
+  /**
+   * The current handler which gets called currently.
+   */
+  current: HandlerMatch;
 };
 
 export class HttpRequest<Raw extends Request> {
@@ -143,3 +162,10 @@ export class HttpResponse {
     });
   }
 }
+
+export type ExecutionOptions = {
+  request: Request;
+  matches: MatchResult;
+  scope: InjectableScope;
+  env: unknown;
+};

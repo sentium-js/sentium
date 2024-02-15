@@ -1,12 +1,8 @@
-import { ExecutionContext } from "../handler/context.ts";
-
-export type MiddlewareFunction = (
-  ctx: ExecutionContext,
-  next: () => Promise<void>,
-) => Promise<void>;
+import { Context } from "../execution/types.ts";
 
 export interface Middleware {
-  handle: MiddlewareFunction;
+  handle(
+    ctx: Context,
+    next: () => Promise<void>,
+  ): Promise<void>;
 }
-
-// TODO discuss how to use middlewares

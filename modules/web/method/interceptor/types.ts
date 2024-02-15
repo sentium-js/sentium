@@ -1,9 +1,9 @@
 import { MaybePromise } from "../../../common/mod.ts";
-import { ExecutionContext } from "../../handler/context.ts";
+import { Context } from "../../execution/types.ts";
 
 export interface Interceptable {
   intercept(
-    context: ExecutionContext,
+    context: Context,
     next: () => MaybePromise<unknown>,
   ): MaybePromise<unknown>;
 }

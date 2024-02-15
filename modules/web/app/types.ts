@@ -36,7 +36,7 @@ export type ApplicationOptions = {
   /**
    * Provide a custom logger function for the router.
    */
-  logger?: LogFunction;
+  logger?: LogFunction | false;
 
   /**
    * List of interceptors which should be registered as global interceptors.
@@ -48,3 +48,7 @@ export type ApplicationOptions = {
    */
   middlewares?: Class<any, Middleware>[];
 };
+
+export type PreloadReturn<Preload extends boolean> = Preload extends true
+  ? Promise<void>
+  : void;
