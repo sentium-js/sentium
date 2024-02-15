@@ -2,11 +2,11 @@ import { InjectableScope } from "../../injectable/mod.ts";
 import { Logger } from "../logger/logger.ts";
 import { HandlerMatch } from "../router/types.ts";
 import {
-  Handler,
   MatchResult,
   MethodHandler,
   MiddlewareHandler,
 } from "../router/types.ts";
+import { GetTagFunction } from "../tag/types.ts";
 
 export type Body = BodyInit | null | undefined;
 
@@ -57,6 +57,26 @@ export type Context<Req extends Request = Request, Env = unknown> = {
    * The current handler which gets called currently.
    */
   current: HandlerMatch;
+
+  /**
+   * Get a tag from the current method or controller.
+   *
+   * @param tag The tag to get.
+   * @param mode The mode to get the tag. Following modes are available:
+   *
+   * `method` - Get the tag manager for the current method.
+   *
+   * `controller` - Get the tag manager for the current controller.
+   *
+   * `method-first` - Get the tag manager for the current method and controller.
+   *  Method tags have priority. (*default*)
+   *
+   * `controller-first` - Get the tag manager for the current method and controller.
+   *  Controller tags have priority.
+   *
+   * @returns The tag manager for the selected type.
+   */
+  getTag: GetTagFunction;
 };
 
 export class HttpRequest<Raw extends Request> {

@@ -12,6 +12,7 @@ import {
 } from "./types.ts";
 import { MethodManager } from "../method/manager.ts";
 import { LogColor } from "../logger/colors.ts";
+import { getTag } from "../tag/tag.ts";
 
 export const executeHandlers = async (
   options: ExecutionOptions,
@@ -72,6 +73,13 @@ const generateContext = (
     env,
     scope,
     logger: resolve(Logger, scope),
+    getTag: (tag, mode) =>
+      getTag(
+        tag,
+        mode,
+        matches.method?.handler.target,
+        matches.method?.handler.controller,
+      ),
 
     method: matches.method,
     middlewares: matches.middlewares,

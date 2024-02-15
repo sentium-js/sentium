@@ -22,3 +22,6 @@ export { type ParamResolver, type ParamType } from "./method/param/types.ts";
 export { use } from "./middleware/decorator.ts";
 export { createMiddleware } from "./middleware/middleware.ts";
 export { type Middleware } from "./middleware/types.ts";
+
+export { tag } from "./tag/decorator.ts";
+export { TagManager } from "./tag/tag.ts";
