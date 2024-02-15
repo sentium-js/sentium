@@ -1,5 +1,10 @@
 {
   "imports": {
+    "@sentium/common": "./modules/common/mod.ts",
+    "@sentium/injectable": "./modules/injectable/mod.ts",
+    "@sentium/metadata": "./modules/metadata/mod.ts",
+    "@sentium/web": "./modules/web/mod.ts",
+
     "std/": "https://deno.land/std@0.215.0/",
     "dnt/": "https://deno.land/x/dnt@0.40.0/"
   },
