@@ -1,4 +1,4 @@
-import { Class, MaybePromise, InstanceTypes } from '../common/mod.ts';
+import { Class, InstanceTypes, MaybePromise } from "../common/mod.ts";
 
 /**
  * Type of the scope for the injectable class.
@@ -22,13 +22,13 @@ export type InjectableInitializer<Args extends readonly any[], ReturnType> = (
  * because the inects gets injected to the the initializer.
  */
 export type InjectableTarget<
-  Inject extends readonly Class[],
-  Init extends InjectableInitializer<any, any> | undefined
-> = Init extends undefined ? Class<InstanceTypes<Inject>> : Class;
+  Injects extends readonly Class[],
+  Init extends InjectableInitializer<any, any> | undefined,
+> = Init extends undefined ? Class<InstanceTypes<Injects>> : Class;
 
 export type InjectableMetadata<
   Target extends Class = Class,
-  Injects extends readonly Class[] = readonly Class[]
+  Injects extends readonly Class[] = readonly Class[],
 > = {
   // runtime data
   instances: Map<InjectableScope, InstanceType<Target>>;
@@ -36,5 +36,7 @@ export type InjectableMetadata<
 
   // static options
   injects: Injects;
-  initializer: InjectableInitializer<InstanceTypes<Injects>, InstanceType<Target>> | undefined;
+  initializer:
+    | InjectableInitializer<InstanceTypes<Injects>, InstanceType<Target>>
+    | undefined;
 };
