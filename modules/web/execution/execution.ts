@@ -47,7 +47,7 @@ export const executeHandlers = async (
     // TODO custom error handler
     logger.error("Execution", "Error during request handling:", err);
     context.res.json({ error: "Internal server error" });
-    context.res.status(500);
+    context.res.status = 500;
   });
 
   // after the handler chain the response is returned
