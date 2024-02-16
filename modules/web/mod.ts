@@ -9,6 +9,8 @@ export {
   HttpResponse,
 } from "./execution/types.ts";
 
+export { Logger } from "./logger/logger.ts";
+
 export * from "./method/decorator.ts";
 export { type MethodOptions } from "./method/types.ts";
 
