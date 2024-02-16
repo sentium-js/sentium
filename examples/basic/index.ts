@@ -1,4 +1,4 @@
-import { Application } from "@sentium/web";
+import { Application } from "../../modules/web/mod.ts";
 import { UserController } from "./user/user.controller.ts";
 
 const app = new Application();

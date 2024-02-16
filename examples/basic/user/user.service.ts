@@ -1,4 +1,4 @@
-import { injectable } from "@sentium/injectable";
+import { injectable } from "../../../modules/injectable/mod.ts";
 import { DatabaseConnection } from "../database.ts";
 
 @injectable([DatabaseConnection])

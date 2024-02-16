@@ -9,7 +9,7 @@ import {
   ParamResolver,
   post,
   put,
-} from "@sentium/web";
+} from "../../../modules/web/mod.ts";
 import { UserService } from "./user.service.ts";
 
 // basic body parser

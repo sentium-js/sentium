@@ -1,4 +1,4 @@
-import { injectable } from "@sentium/injectable";
+import { injectable } from "../../modules/injectable/mod.ts";
 import { simulateLoading } from "./utils.ts";
 import { User } from "./types.ts";
 
