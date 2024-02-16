@@ -1,5 +1,5 @@
 import { Context } from "../../execution/types.ts";
-import { HttpRequest, HttpResponse } from "@sentium/web";
+import { HttpRequest, HttpResponse } from "../../execution/types.ts";
 import { ParamResolver } from "./types.ts";
 
 export const ctx: ParamResolver<Context> = (ctx: Context) => ctx;
