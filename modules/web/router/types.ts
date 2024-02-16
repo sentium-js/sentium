@@ -71,8 +71,6 @@ export type MatchResult = {
 
   /**
    * The matched handler with the highest priority.
-   *
-   * If no handler matches, this is undefined. (404)
    */
   method?: HandlerMatch<MethodHandler>;
 };

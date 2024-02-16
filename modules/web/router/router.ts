@@ -23,12 +23,12 @@ export class Router {
   private readonly logger: Logger;
 
   constructor(scope: InjectableScope) {
+    this.logger = resolve(Logger, scope);
+    this.logger.debug("Router", "Creating router...");
+
     this.router = new SmartRouter({
       routers: [new RegExpRouter(), new TrieRouter()],
     });
-    this.logger = resolve(Logger, scope);
-
-    this.logger.debug("Router", "Creating router...");
   }
 
   get strategy(): "RegExpRouter" | "TrieRouter" | undefined {

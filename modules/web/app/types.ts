@@ -3,6 +3,7 @@ import { InjectableScope } from "../../injectable/mod.ts";
 import { LogFunction } from "../logger/logger.ts";
 import { Interceptable } from "../method/interceptor/types.ts";
 import { Middleware } from "../middleware/types.ts";
+import { ErrorHandler, NotFoundHandler } from "../execution/types.ts";
 
 export type ApplicationOptions = {
   /**
@@ -47,6 +48,16 @@ export type ApplicationOptions = {
    * List of middlewares which should be registered as global middlewares.
    */
   middlewares?: Class<any, Middleware>[];
+
+  /**
+   * The not found handler which should be called if no handler matches the request.
+   */
+  notFoundHandler?: Class<any, NotFoundHandler>;
+
+  /**
+   * The error handler which should be called if an error occurs during request handling.
+   */
+  errorHandler?: Class<any, ErrorHandler>;
 };
 
 export type PreloadReturn<Preload extends boolean> = Preload extends true

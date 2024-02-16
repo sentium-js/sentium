@@ -3,11 +3,17 @@ export { Application } from "./app/app.ts";
 export { controller } from "./controller/controller.ts";
 
 export {
-  type Body,
+  type BodyType,
   type Context,
+  type ErrorHandler,
   HttpRequest,
   HttpResponse,
+  type NotFoundHandler,
 } from "./execution/types.ts";
+export {
+  createErrorHandler,
+  createNotFoundHandler,
+} from "./execution/handler.ts";
 
 export { Logger } from "./logger/logger.ts";
 

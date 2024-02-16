@@ -29,25 +29,12 @@ export const executeHandlers = async (
     }`,
   );
 
-  // determine the first handler which should be called
-  const firstHandler = options.matches.middlewares.at(0) ??
-    options.matches.method;
-
-  // if no handler is found return a 404 response
-  // TODO custom 404 handler
-  if (!firstHandler) {
-    return new Response("Not found", { status: 404 });
-  }
-
   // generate the context for the request
-  const context = generateContext(options, firstHandler);
+  const context = generateContext(options);
 
-  // call the handler chain
   await call(context).catch((err) => {
-    // TODO custom error handler
     logger.error("Execution", "Error during request handling:", err);
-    context.res.json({ error: "Internal server error" });
-    context.res.status = 500;
+    return callErrorHandler(context, err);
   });
 
   // after the handler chain the response is returned
@@ -62,8 +49,8 @@ export const executeHandlers = async (
  * @returns The generated context for the request.
  */
 const generateContext = (
-  { request, matches, env, scope }: ExecutionOptions,
-  current: HandlerMatch,
+  { request, matches, env, scope, notFoundHandler, errorHandler }:
+    ExecutionOptions,
 ): Context => {
   return {
     req: new HttpRequest(request, matches.method?.params ?? {}),
@@ -84,7 +71,10 @@ const generateContext = (
     method: matches.method,
     middlewares: matches.middlewares,
 
-    current,
+    current: matches.middlewares.at(0) ?? matches.method,
+
+    notFoundHandler,
+    errorHandler,
   };
 };
 
@@ -119,11 +109,16 @@ const determineNextHandler = (
   return nextMiddleware ?? method;
 };
 
-const call = async (context: Context): Promise<void> => {
+const call = async (
+  context: Context,
+): Promise<void> => {
   // the current handler which should be called
   const current = context.current;
 
-  if (current.handler.type === "method") {
+  if (!current) {
+    // if there is no current handler call the not found handler
+    await callNotFoundHandler(context as Context<Request, undefined>);
+  } else if (current.handler.type === "method") {
     // resolve the interceptors
     const interceptors = await Promise.all(
       current.handler.interceptors
@@ -146,7 +141,10 @@ const call = async (context: Context): Promise<void> => {
     const methodManager = new MethodManager(current.handler.target);
 
     // resolve the params for the method
-    const methodParams = await resolveParams(context, methodManager.params);
+    const methodParams = await resolveParams(
+      context,
+      methodManager.params,
+    );
 
     // call the method with the interceptors
     const result = await callMethod(
@@ -174,9 +172,6 @@ const call = async (context: Context): Promise<void> => {
         // the current handler is here always a middleware handler
         current as HandlerMatch<MiddlewareHandler>,
       );
-
-      // if no next handler is found the recursion ends here
-      if (!nextHandler) return;
 
       // set the next handler as the current handler
       context.current = nextHandler;
@@ -220,6 +215,21 @@ const callMethod = (
   }
 };
 
+const callNotFoundHandler = async (
+  context: Context<Request, undefined>,
+) => {
+  const handler = await resolveAsync(context.notFoundHandler, context.scope);
+  await handler.onNotFound(context);
+};
+
+const callErrorHandler = async (
+  context: Context<Request, HandlerMatch | undefined>,
+  error: unknown,
+) => {
+  const handler = await resolveAsync(context.errorHandler, context.scope);
+  await handler.onError(context, error);
+};
+
 /**
  * Transform the result of the method to the response body.
  * Here the response type header will be determined and the result will be added to the response.
@@ -228,7 +238,10 @@ const callMethod = (
  * @param result The result of the method.
  * @returns A promise which resolves after the result was added to the response.
  */
-const handleResult = (context: Context, result: unknown): Promise<void> => {
+const handleResult = (
+  context: Context,
+  result: unknown,
+): Promise<void> => {
   // TODO here should be the logic to determine the response type
   // TODO for now we always interpret the result as json
   context.res.json(result);

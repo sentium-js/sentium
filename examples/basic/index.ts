@@ -1,3 +1,4 @@
+/// <reference lib="Deno.NS" />
 import { Application } from "../../modules/web/mod.ts";
 import { UserController } from "./user/user.controller.ts";
 

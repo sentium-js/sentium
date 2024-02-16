@@ -1,3 +1,4 @@
+import { Class, MaybePromise } from "../../common/mod.ts";
 import { InjectableScope } from "../../injectable/mod.ts";
 import { Logger } from "../logger/logger.ts";
 import { HandlerMatch } from "../router/types.ts";
@@ -8,9 +9,13 @@ import {
 } from "../router/types.ts";
 import { GetTagFunction } from "../tag/types.ts";
 
-export type Body = BodyInit | null | undefined;
+export type BodyType = BodyInit | null | undefined;
 
-export type Context<Req extends Request = Request, Env = unknown> = {
+export type Context<
+  Req extends Request = Request,
+  Current extends HandlerMatch | undefined = HandlerMatch | undefined,
+  Env = unknown,
+> = {
   /**
    * The incoming request with access to the raw request from the adapter.
    */
@@ -55,8 +60,10 @@ export type Context<Req extends Request = Request, Env = unknown> = {
 
   /**
    * The current handler which gets called currently.
+   *
+   * This is undefined in the not found handler.
    */
-  current: HandlerMatch;
+  current: Current;
 
   /**
    * Get a tag from the current method or controller.
@@ -77,6 +84,16 @@ export type Context<Req extends Request = Request, Env = unknown> = {
    * @returns The tag manager for the selected type.
    */
   getTag: GetTagFunction;
+
+  /**
+   * The not found handler which gets called if no handler matches the request.
+   */
+  notFoundHandler: Class<any[], NotFoundHandler>;
+
+  /**
+   * The error handler which gets called if an error occurs during request handling.
+   */
+  errorHandler: Class<any[], ErrorHandler>;
 };
 
 export class HttpRequest<Raw extends Request = Request> {
@@ -127,7 +144,7 @@ export class HttpRequest<Raw extends Request = Request> {
     return this._request.headers;
   }
 
-  get body(): Body {
+  get body(): ReadableStream<Uint8Array> | null {
     return this._request.body;
   }
 
@@ -147,7 +164,7 @@ export class HttpRequest<Raw extends Request = Request> {
 export class HttpResponse {
   headers: Headers;
   status: number;
-  body: Body;
+  body: BodyType;
 
   constructor() {
     this.headers = new Headers();
@@ -185,4 +202,17 @@ export type ExecutionOptions = {
   matches: MatchResult;
   scope: InjectableScope;
   env: unknown;
+  notFoundHandler: Class<any[], NotFoundHandler>;
+  errorHandler: Class<any[], ErrorHandler>;
 };
+
+export interface NotFoundHandler<Req extends Request = Request> {
+  onNotFound(ctx: Context<Req, undefined>): MaybePromise<void>;
+}
+
+export interface ErrorHandler<Req extends Request = Request> {
+  onError(
+    ctx: Context<Req, HandlerMatch | undefined>,
+    error: unknown,
+  ): MaybePromise<void>;
+}

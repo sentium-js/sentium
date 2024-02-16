@@ -15,6 +15,8 @@ import { Router } from "../router/router.ts";
 import { executeHandlers } from "../execution/execution.ts";
 import { Middleware } from "../middleware/types.ts";
 import { joinPaths } from "../router/utils.ts";
+import { ErrorHandler, NotFoundHandler } from "../execution/types.ts";
+import { DefaultHandler } from "./default_handler.ts";
 
 export class Application {
   private readonly router: Router;
@@ -22,6 +24,8 @@ export class Application {
   private readonly preloaded: boolean;
   private readonly logger: Logger;
   private readonly interceptors: Class<any, Interceptable>[];
+  private readonly notFoundHandler: Class<any, NotFoundHandler>;
+  private readonly errorHandler: Class<any, ErrorHandler>;
   private preloadPromise: Promise<void> | undefined;
 
   constructor(
@@ -31,6 +35,8 @@ export class Application {
     this.logger = resolve(Logger, this.scope);
     this.preloaded = options.preload ?? false;
     this.interceptors = options.interceptors ?? [];
+    this.notFoundHandler = options.notFoundHandler ?? DefaultHandler;
+    this.errorHandler = options.errorHandler ?? DefaultHandler;
 
     if (options.logger) this.logger.send = options.logger;
     // set logger to noop if false is provided
@@ -104,6 +110,8 @@ export class Application {
       env,
       matches,
       scope: this.scope,
+      notFoundHandler: this.notFoundHandler,
+      errorHandler: this.errorHandler,
     });
 
     // return the response
