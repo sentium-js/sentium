@@ -79,7 +79,7 @@ export type Context<Req extends Request = Request, Env = unknown> = {
   getTag: GetTagFunction;
 };
 
-export class HttpRequest<Raw extends Request> {
+export class HttpRequest<Raw extends Request = Request> {
   constructor(private _request: Raw, private _params: Record<string, string>) {}
 
   param(name: string): string | null {

@@ -1,7 +1,14 @@
 import { Context } from "../../execution/types.ts";
+import { HttpRequest, HttpResponse } from "@sentium/web";
 import { ParamResolver } from "./types.ts";
 
 export const ctx: ParamResolver<Context> = (ctx: Context) => ctx;
+
+export const request: ParamResolver<HttpRequest> = (ctx: Context) => ctx.req;
+export const req = request;
+
+export const response: ParamResolver<HttpResponse> = (ctx: Context) => ctx.res;
+export const res = response;
 
 export const param = <T extends string | null = string | null>(
   param: string,
