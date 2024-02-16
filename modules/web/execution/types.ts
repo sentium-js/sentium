@@ -10,7 +10,21 @@ import { GetTagFunction } from "../tag/types.ts";
 
 export type Body = BodyInit | null | undefined;
 
-export type Context<Req extends Request = Request, Env = unknown> = {
+export type BaseRequest = {
+  method: Request["method"];
+  url: Request["url"];
+  headers: Request["headers"];
+  body: Request["body"];
+  bodyUsed: Request["bodyUsed"];
+
+  json: Request["json"];
+  text: Request["text"];
+  arrayBuffer: Request["arrayBuffer"];
+  formData: Request["formData"];
+  blob: Request["blob"];
+};
+
+export type Context<Req extends BaseRequest = Request, Env = unknown> = {
   /**
    * The incoming request with access to the raw request from the adapter.
    */
@@ -79,7 +93,7 @@ export type Context<Req extends Request = Request, Env = unknown> = {
   getTag: GetTagFunction;
 };
 
-export class HttpRequest<Raw extends Request = Request> {
+export class HttpRequest<Raw extends BaseRequest = Request> {
   constructor(private _request: Raw, private _params: Record<string, string>) {}
 
   param(name: string): string | null {
