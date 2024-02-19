@@ -1,5 +1,5 @@
 /// <reference lib="Deno.NS" />
-import { Application } from "../../modules/web/mod.ts";
+import { Application } from "../../modules/core/mod.ts";
 import { UserController } from "./user/user.controller.ts";
 
 const app = new Application();

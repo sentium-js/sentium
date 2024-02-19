@@ -1,8 +1,15 @@
-import { wrap, unwrap, resolve, injectable, Wrapped } from '../../modules/injectable/mod.ts';
-import { assertStrictEquals } from 'std/assert/assert_strict_equals.ts';
+/// <reference lib="deno.ns" />
+import {
+  injectable,
+  resolve,
+  unwrap,
+  wrap,
+  Wrapped,
+} from "../../modules/core/mod.ts";
+import { assertStrictEquals } from "std/assert/assert_strict_equals.ts";
 
-Deno.test('wrapped value', () => {
-  const arbitraryValue = { hello: 'world' };
+Deno.test("wrapped value", () => {
+  const arbitraryValue = { hello: "world" };
 
   const WrapperClass = wrap(arbitraryValue);
 
@@ -16,8 +23,8 @@ Deno.test('wrapped value', () => {
   assertStrictEquals(arbitraryValue, wrapperInstance.value);
 });
 
-Deno.test('class with wrapped value inject', () => {
-  const arbitraryValue = { hello: 'world' };
+Deno.test("class with wrapped value inject", () => {
+  const arbitraryValue = { hello: "world" };
 
   const WrappedValue = wrap(arbitraryValue);
 
@@ -25,7 +32,7 @@ Deno.test('class with wrapped value inject', () => {
   class MyClass {
     constructor(
       public wrappedValue: Wrapped<typeof arbitraryValue>,
-      public wrappedValue2: Wrapped<typeof arbitraryValue>
+      public wrappedValue2: Wrapped<typeof arbitraryValue>,
     ) {}
   }
 

@@ -51,60 +51,28 @@ const buildModule = async (
 };
 
 switch (name) {
-  case "common":
-    await buildModule({ name: "common" });
-    break;
-  case "metadata":
-    await buildModule({ name: "metadata" });
-    break;
-  case "injectable":
+  case "core":
     await buildModule({
-      name: "injectable",
+      name: "core",
+      "description": "Sentium core module",
       mappings: {
-        "./modules/common/mod.ts": {
-          name: "@sentium/common",
-          version: `^${project.version}`,
-        },
-        "./modules/metadata/mod.ts": {
-          name: "@sentium/metadata",
-          version: `^${project.version}`,
-        },
-      },
-    });
-    break;
-  case "web":
-    await buildModule({
-      name: "web",
-      mappings: {
-        "./modules/common/mod.ts": {
-          name: "@sentium/common",
-          version: `^${project.version}`,
-        },
-        "./modules/metadata/mod.ts": {
-          name: "@sentium/metadata",
-          version: `^${project.version}`,
-        },
-        "./modules/injectable/mod.ts": {
-          name: "@sentium/injectable",
-          version: `^${project.version}`,
-        },
         // hono routers
-        "./modules/web/router/hono/router.ts": {
+        "./modules/core/router/hono/router.ts": {
           name: "hono",
           version: `^4.0.1`,
           subPath: "router",
         },
-        "./modules/web/router/hono/reg-exp-router.ts": {
+        "./modules/core/router/hono/reg-exp-router.ts": {
           name: "hono",
           version: `^4.0.1`,
           subPath: "router/reg-exp-router",
         },
-        "./modules/web/router/hono/smart-router.ts": {
+        "./modules/core/router/hono/smart-router.ts": {
           name: "hono",
           version: `^4.0.1`,
           subPath: "router/smart-router",
         },
-        "./modules/web/router/hono/trie-router.ts": {
+        "./modules/core/router/hono/trie-router.ts": {
           name: "hono",
           version: `^4.0.1`,
           subPath: "router/trie-router",

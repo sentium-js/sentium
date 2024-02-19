@@ -1,25 +1,26 @@
-import { assertInstanceOf, assertEquals } from 'std/assert/mod.ts';
-import { injectable, resolve } from '../../modules/injectable/mod.ts';
+/// <reference lib="deno.ns" />
+import { assertEquals, assertInstanceOf } from "std/assert/mod.ts";
+import { injectable, resolve } from "../../modules/core/mod.ts";
 
-Deno.test('basic class', () => {
+Deno.test("basic class", () => {
   @injectable()
   class MyClass {
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
   const instance = resolve(MyClass);
 
   assertInstanceOf(instance, MyClass);
-  assertEquals(instance.getHello(), 'Hello');
+  assertEquals(instance.getHello(), "Hello");
 });
 
-Deno.test('class with injects', () => {
+Deno.test("class with injects", () => {
   @injectable()
   class MyDependency {
     getWorld() {
-      return 'World';
+      return "World";
     }
   }
 
@@ -36,11 +37,11 @@ Deno.test('class with injects', () => {
 
   assertInstanceOf(instance, MyClass);
   assertInstanceOf(instance.dependency, MyDependency);
-  assertEquals(instance.getHelloWorld(), 'Hello World');
+  assertEquals(instance.getHelloWorld(), "Hello World");
 });
 
-Deno.test('class with initializer', () => {
-  @injectable([], () => new MyClass('Hello'))
+Deno.test("class with initializer", () => {
+  @injectable([], () => new MyClass("Hello"))
   class MyClass {
     constructor(private hello: string) {}
 
@@ -52,21 +53,21 @@ Deno.test('class with initializer', () => {
   const instance = resolve(MyClass);
 
   assertInstanceOf(instance, MyClass);
-  assertEquals(instance.getHello(), 'Hello');
+  assertEquals(instance.getHello(), "Hello");
 });
 
-Deno.test('class with injects and initializer', () => {
+Deno.test("class with injects and initializer", () => {
   @injectable()
   class MyDependency {
     getWorld() {
-      return 'World';
+      return "World";
     }
   }
 
   @injectable()
   class MyOtherDependency {
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
@@ -84,5 +85,5 @@ Deno.test('class with injects and initializer', () => {
   assertInstanceOf(instance, MyClass);
   assertInstanceOf(instance.dep1, MyDependency);
   assertInstanceOf(instance.dep2, MyOtherDependency);
-  assertEquals(instance.getHelloWorld(), 'Hello World');
+  assertEquals(instance.getHelloWorld(), "Hello World");
 });

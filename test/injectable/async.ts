@@ -1,17 +1,23 @@
+/// <reference lib="deno.ns" />
 import {
-  assertInstanceOf,
   assertEquals,
-  assertThrows,
+  assertInstanceOf,
   assertStrictEquals,
-} from 'std/assert/mod.ts';
-import { injectable, resolveAsync, resolve, preload } from '../../modules/injectable/mod.ts';
+  assertThrows,
+} from "std/assert/mod.ts";
+import {
+  injectable,
+  preload,
+  resolve,
+  resolveAsync,
+} from "../../modules/core/mod.ts";
 
-Deno.test('class with async initializer', async () => {
+Deno.test("class with async initializer", async () => {
   @injectable([], async () => {
     // simulate async initialization
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    return new MyAsyncClass('Hello');
+    return new MyAsyncClass("Hello");
   })
   class MyAsyncClass {
     constructor(public awaitedValue: string) {}
@@ -20,15 +26,15 @@ Deno.test('class with async initializer', async () => {
   const instance = await resolveAsync(MyAsyncClass);
 
   assertInstanceOf(instance, MyAsyncClass);
-  assertEquals(instance.awaitedValue, 'Hello');
+  assertEquals(instance.awaitedValue, "Hello");
 });
 
-Deno.test('class with async injects and initializer', async () => {
+Deno.test("class with async injects and initializer", async () => {
   @injectable([], async () => {
     // simulate async initialization
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    return new MyDependency('World');
+    return new MyDependency("World");
   })
   class MyDependency {
     constructor(private awaitedWorld: string) {}
@@ -67,11 +73,11 @@ Deno.test('class with async injects and initializer', async () => {
 
   // it should be the same instance
   assertStrictEquals(instance, instanceSync);
-  assertStrictEquals(instance.getHelloWorld(), 'Hello World');
-  assertStrictEquals(instanceSync.getHelloWorld(), 'Hello World');
+  assertStrictEquals(instance.getHelloWorld(), "Hello World");
+  assertStrictEquals(instanceSync.getHelloWorld(), "Hello World");
 });
 
-Deno.test('class with async initializer and multiple resolves', async () => {
+Deno.test("class with async initializer and multiple resolves", async () => {
   @injectable([], async () => {
     // simulate async initialization
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -80,7 +86,7 @@ Deno.test('class with async initializer and multiple resolves', async () => {
   })
   class MyClass {
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
@@ -93,7 +99,7 @@ Deno.test('class with async initializer and multiple resolves', async () => {
   assertStrictEquals(instance, instance2);
 });
 
-Deno.test('class with async initializer and multiple resolves (sync and async)', async () => {
+Deno.test("class with async initializer and multiple resolves (sync and async)", async () => {
   let initialized = false;
 
   @injectable([], async () => {
@@ -111,7 +117,7 @@ Deno.test('class with async initializer and multiple resolves (sync and async)',
     constructor() {}
 
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
@@ -135,7 +141,7 @@ Deno.test('class with async initializer and multiple resolves (sync and async)',
   assertStrictEquals(instance, instanceSync);
 });
 
-Deno.test('class with async initializer and preload', async () => {
+Deno.test("class with async initializer and preload", async () => {
   @injectable([], async () => {
     // simulate async initialization
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -144,7 +150,7 @@ Deno.test('class with async initializer and preload', async () => {
   })
   class MyClass {
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
@@ -155,12 +161,12 @@ Deno.test('class with async initializer and preload', async () => {
   const instance = resolve(MyClass);
 
   assertInstanceOf(instance, MyClass);
-  assertEquals(instance.getHello(), 'Hello');
+  assertEquals(instance.getHello(), "Hello");
 });
 
 Deno.test(
   {
-    name: 'class with async initializer, preload and custom scope',
+    name: "class with async initializer, preload and custom scope",
 
     /**
      * This option is needed because a sync resolve on a async injectable triggers
@@ -179,17 +185,17 @@ Deno.test(
     })
     class MyClass {
       getHello() {
-        return 'Hello';
+        return "Hello";
       }
     }
 
     assertThrows(() => {
       // this should throw because at this moment the instance is initialized.
-      resolve(MyClass, 'custom preload scope');
+      resolve(MyClass, "custom preload scope");
     });
 
     // preload the injectable with custom scope and await it
-    await preload([MyClass], 'custom preload scope');
+    await preload([MyClass], "custom preload scope");
 
     assertThrows(() => {
       // this should throw because the preload scope is not the same as the resolve scope
@@ -197,8 +203,8 @@ Deno.test(
     });
 
     // now the async injectable can be resolved syncronously with the correct scope
-    const instance = resolve(MyClass, 'custom preload scope');
+    const instance = resolve(MyClass, "custom preload scope");
     assertInstanceOf(instance, MyClass);
-    assertEquals(instance.getHello(), 'Hello');
-  }
+    assertEquals(instance.getHello(), "Hello");
+  },
 );

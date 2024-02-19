@@ -1,16 +1,24 @@
-import { injectable, resolve } from '../../modules/injectable/mod.ts';
-import { assertInstanceOf, assertNotStrictEquals, assertStrictEquals } from 'std/assert/mod.ts';
+/// <reference lib="deno.ns" />
+import { injectable, resolve } from "../../modules/core/mod.ts";
+import {
+  assertInstanceOf,
+  assertNotStrictEquals,
+  assertStrictEquals,
+} from "std/assert/mod.ts";
 
-Deno.test('class instance with different scopes', () => {
+Deno.test("class instance with different scopes", () => {
   @injectable()
   class MyClass {
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
   const instanceDefaultScope = resolve(MyClass);
-  const instanceCustomScope = resolve(MyClass, 'Hello I am a custom string scope');
+  const instanceCustomScope = resolve(
+    MyClass,
+    "Hello I am a custom string scope",
+  );
 
   assertInstanceOf(instanceDefaultScope, MyClass);
   assertInstanceOf(instanceCustomScope, MyClass);
@@ -19,20 +27,26 @@ Deno.test('class instance with different scopes', () => {
   assertNotStrictEquals(instanceDefaultScope, instanceCustomScope);
 
   // both instances should return the same value
-  assertStrictEquals(instanceDefaultScope.getHello(), 'Hello');
-  assertStrictEquals(instanceCustomScope.getHello(), 'Hello');
+  assertStrictEquals(instanceDefaultScope.getHello(), "Hello");
+  assertStrictEquals(instanceCustomScope.getHello(), "Hello");
 });
 
-Deno.test('class instance with same scopes', () => {
+Deno.test("class instance with same scopes", () => {
   @injectable()
   class MyClass {
     getHello() {
-      return 'Hello';
+      return "Hello";
     }
   }
 
-  const instanceCustomScope = resolve(MyClass, 'Hello I am a custom string scope');
-  const instanceCustomScopeToo = resolve(MyClass, 'Hello I am a custom string scope');
+  const instanceCustomScope = resolve(
+    MyClass,
+    "Hello I am a custom string scope",
+  );
+  const instanceCustomScopeToo = resolve(
+    MyClass,
+    "Hello I am a custom string scope",
+  );
 
   assertInstanceOf(instanceCustomScope, MyClass);
   assertInstanceOf(instanceCustomScopeToo, MyClass);
@@ -41,6 +55,6 @@ Deno.test('class instance with same scopes', () => {
   assertStrictEquals(instanceCustomScope, instanceCustomScopeToo);
 
   // both instances should return the same value
-  assertStrictEquals(instanceCustomScope.getHello(), 'Hello');
-  assertStrictEquals(instanceCustomScopeToo.getHello(), 'Hello');
+  assertStrictEquals(instanceCustomScope.getHello(), "Hello");
+  assertStrictEquals(instanceCustomScopeToo.getHello(), "Hello");
 });

@@ -9,7 +9,7 @@ import {
   ParamResolver,
   post,
   put,
-} from "../../../modules/web/mod.ts";
+} from "../../../modules/core/mod.ts";
 import { UserService } from "./user.service.ts";
 
 // basic body parser

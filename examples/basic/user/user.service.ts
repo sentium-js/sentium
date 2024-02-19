@@ -1,4 +1,4 @@
-import { injectable } from "../../../modules/injectable/mod.ts";
+import { injectable } from "../../../modules/core/mod.ts";
 import { DatabaseConnection } from "../database.ts";
 
 @injectable([DatabaseConnection])
